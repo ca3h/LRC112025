@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Vé LRC - QR Code</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 10px;
+        }
+        h3 { 
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 1em; 
+            font-weight: bold;
+        }
+        .ticket-form { 
+            background: #f9f9f9; 
+            padding: 15px;
+            border-radius: 8px; 
+            margin-bottom: 20px;
+        }
+        .ticket-group { 
+            border: 1px solid #ddd; 
+            padding: 10px;
+            margin-bottom: 20px; 
+            border-radius: 6px; 
+        }
+        label, select, input, button { 
+            display: block; 
+            margin-bottom: 15px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        input[type="text"], input[type="number"], select { 
+            padding: 10px; 
+            font-size: 16px;
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+        }
+        /* Highlight input có thể click để copy */
+        input[readonly] {
+            cursor: pointer;
+            background-color: #f0f0f0; 
+            text-align: center; /* Căn giữa nội dung copy */
+        }
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 18px; 
+            margin-top: 20px; 
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        #qr-container { 
+            text-align: center; 
+            margin-top: 30px; 
+            border: 1px solid #eee; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        #qr-container img {
+            max-width: 90%;
+            height: auto;
+            width: 300px; 
+            margin-top: 20px;
+        }
+        #total-amount { 
+            font-size: 1.5em; 
+            font-weight: bold; 
+            color: #28a745; 
+            margin-bottom: 15px; 
+        }
+        /* Style cho khối thông tin Copy */
+        .info-block {
+            max-width: 450px;
+            margin: 0 auto;
+            padding-bottom: 15px;
+            text-align: left;
+        }
+        .copy-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .copy-item label {
+            width: 100px;
+            margin-bottom: 0;
+            font-weight: bold;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .input-group {
+            flex-grow: 1;
+            position: relative;
+            margin-right: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding-right: 10px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .bank-info {
+            font-weight: bold;
+            flex-grow: 1;
+            padding-left: 10px;
+        }
+        #explanation {
+            font-size: 0.95em;
+            text-align: center;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            margin-top: 15px;
+        }
+        .error { color: red; margin-bottom: 10px; }
+
+        /* Style cho Bảng giá vé mới */
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        .price-table th, .price-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .price-table th {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+        }
+        .price-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .price-category {
+            font-weight: bold;
+            text-align: center;
+        }
+        .price-value {
+            text-align: right;
+            font-weight: bold;
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>💰 Thanh Toán Vé LRC</h1>
+    <hr>
+
+    <div class="ticket-form" style="background: #fff; border: 1px solid #007bff;">
+        <h2>Bảng Giá Vé (Đơn vị: VND)</h2>
+        <table class="price-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">Đối tượng</th>
+                    <th colspan="2">Hình thức đăng ký</th>
+                </tr>
+                <tr>
+                    <th>Vé Theo Đoàn</th> 
+                    <th>Vé Tự Túc</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Người lớn (NL)</td>
+                    <td class="price-value">1.700.000</td>
+                    <td class="price-value">1.500.000</td>
+                </tr>
+                <tr>
+                    <td>Trẻ em (TE, 6-10 tuổi)</td>
+                    <td class="price-value">1.200.000</td>
+                    <td class="price-value">1.000.000</td>
+                </tr>
+                <tr>
+                    <td>Trẻ em đi kèm (DK, 1-5 tuổi)</td>
+                    <td class="price-value">200.000</td>
+                    <td class="price-value">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="ticket-form">
+        <h2>Thông tin đặt vé và người chuyển</h2>
+
+        <label for="name">Họ tên LĐ Platinum UP:</label>
+        <input type="text" id="name" placeholder="Ví dụ: NGUYEN VAN A">
+        
+        <label for="transport_mode">Hình thức Đăng ký:</label>
+        <select id="transport_mode">
+            <option value="group_only">Chỉ đi theo đoàn</option>
+            <option value="self_only">Chỉ đi tự túc</option>
+            <option value="combined">Kết hợp theo đoàn và tự túc</option>
+        </select>
+
+        <div id="group-form" class="ticket-group">
+            <h3>Vé THEO ĐOÀN</h3>
+            <label for="group_adults">Số lượng Người lớn (Đoàn):</label>
+            <input type="number" id="group_adults" value="0" min="0">
+
+            <label for="group_children_6_10">Số lượng Trẻ em (Đoàn, 6-10 tuổi):</label>
+            <input type="number" id="group_children_6_10" value="0" min="0">
+
+            <label for="group_children_1_5">Số lượng Trẻ em đi kèm (Đoàn, 1-5 tuổi):</label>
+            <input type="number" id="group_children_1_5" value="0" min="0">
+        </div>
+
+        <div id="self-form" class="ticket-group" style="display:none;">
+            <h3>Vé TỰ TÚC</h3>
+            <label for="self_adults">Số lượng Người lớn (Tự túc):</label>
+            <input type="number" id="self_adults" value="0" min="0">
+
+            <label for="self_children_6_10">Số lượng Trẻ em (Tự túc, 6-10 tuổi):</label>
+            <input type="number" id="self_children_6_10" value="0" min="0">
+
+            <label for="self_children_1_5">Số lượng Trẻ em đi kèm (Tự túc, 1-5 tuổi):</label>
+            <input type="number" id="self_children_1_5" value="0" min="0">
+        </div>
+        
+        <div id="total-amount">Tổng tiền: 0 VND</div>
+        
+        <button onclick="generateQrCode()">Hiện Mã QR Thanh Toán</button>
+    </div>
+
+    <div id="qr-container">
+        <p>Vui lòng chọn thông tin vé và nhấn nút để tạo mã QR.</p>
+    </div>
+
+    <script>
+        // --- Hàm Copy Nội dung ---
+        function copyToClipboard(elementId) {
+            const copyText = document.getElementById(elementId);
+            
+            if (copyText) {
+                copyText.select();
+                copyText.setSelectionRange(0, 99999); 
+                
+                try {
+                    document.execCommand("copy");
+                    alert("Đã sao chép: " + copyText.value);
+                } catch (err) {
+                    navigator.clipboard.writeText(copyText.value).then(() => {
+                        alert("Đã sao chép: " + copyText.value);
+                    }).catch(err => {
+                        console.error('Không thể sao chép', err);
+                        alert("Tự động sao chép không hoạt động. Vui lòng sao chép thủ công.");
+                    });
+                }
+            }
+        }
+
+        // --- Dữ liệu giá vé (giữ nguyên) ---
+        const TICKET_PRICES = {
+            group: {
+                adult: 1700000,
+                child_6_10: 1200000,
+                child_1_5: 200000 
+            },
+            self: {
+                adult: 1500000,
+                child_6_10: 1000000,
+                child_1_5: 0 
+            }
+        };
+
+        // --- Các hàm logic (giữ nguyên) ---
+        function cleanVietnameseString(str) {
+            if (!str) return '';
+            str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+            str = str.replace(/[^A-Z0-9\s]/g, ' ');
+            return str.replace(/\s+/g, ' ').trim();
+        }
+
+        function toggleForms() {
+            const mode = document.getElementById('transport_mode').value;
+            document.getElementById('group-form').style.display = (mode === 'group_only' || mode === 'combined') ? 'block' : 'none';
+            document.getElementById('self-form').style.display = (mode === 'self_only' || mode === 'combined') ? 'block' : 'none';
+            calculateTotal(); 
+        }
+
+        function calculateTotal() {
+            const mode = document.getElementById('transport_mode').value;
+            let total = 0;
+            let tickets = {};
+
+            if (mode === 'group_only' || mode === 'combined') {
+                const ga = parseInt(document.getElementById('group_adults').value) || 0;
+                const gc610 = parseInt(document.getElementById('group_children_6_10').value) || 0;
+                const gc15 = parseInt(document.getElementById('group_children_1_5').value) || 0;
+                total += (ga * TICKET_PRICES.group.adult) + (gc610 * TICKET_PRICES.group.child_6_10) + (gc15 * TICKET_PRICES.group.child_1_5);
+                tickets.group = { adults: ga, c610: gc610, c15: gc15 };
+            }
+
+            if (mode === 'self_only' || mode === 'combined') {
+                const sa = parseInt(document.getElementById('self_adults').value) || 0;
+                const sc610 = parseInt(document.getElementById('self_children_6_10').value) || 0;
+                const sc15 = parseInt(document.getElementById('self_children_1_5').value) || 0;
+                total += (sa * TICKET_PRICES.self.adult) + (sc610 * TICKET_PRICES.self.child_6_10) + (sc15 * TICKET_PRICES.self.child_1_5);
+                tickets.self = { adults: sa, c610: sc610, c15: sc15 };
+            }
+
+            const totalDisplay = document.getElementById('total-amount');
+            totalDisplay.innerHTML = `Tổng tiền: ${total.toLocaleString('vi-VN')} VND`;
+            totalDisplay.dataset.amount = total; 
+            totalDisplay.dataset.tickets = JSON.stringify(tickets);
+        }
+
+        // --- Hàm tạo URL mã QR và hiển thị ---
+        function generateQrCode() {
+            calculateTotal(); 
+
+            const totalAmount = document.getElementById('total-amount').dataset.amount;
+            const nameInput = document.getElementById('name').value.trim();
+            const tickets = JSON.parse(document.getElementById('total-amount').dataset.tickets || '{}');
+            
+            const qrContainer = document.getElementById('qr-container');
+
+            if (nameInput === "") {
+                qrContainer.innerHTML = '<p class="error">⚠️ Vui lòng nhập **Họ tên LĐ Platinum UP** để tạo mã QR.</p>';
+                return;
+            }
+            if (totalAmount == 0) {
+                qrContainer.innerHTML = '<p class="error">⚠️ Vui lòng chọn ít nhất một vé.</p>';
+                return;
+            }
+
+            // Tạo FINAL DESCRIPTION
+            const cleanName = cleanVietnameseString(nameInput);
+            let descriptionParts = [cleanName];
+            
+            if (tickets.group && (tickets.group.adults > 0 || tickets.group.c610 > 0 || tickets.group.c15 > 0)) {
+                let groupDetails = ['VeDoan'];
+                if (tickets.group.adults > 0) groupDetails.push(`${tickets.group.adults}NL`);
+                if (tickets.group.c610 > 0) groupDetails.push(`${tickets.group.c610}TE`);
+                if (tickets.group.c15 > 0) groupDetails.push(`${tickets.group.c15}DK`); 
+                descriptionParts.push(groupDetails.join(' '));
+            }
+            
+            if (tickets.self && (tickets.self.adults > 0 || tickets.self.c610 > 0 || tickets.self.c15 > 0)) {
+                let selfDetails = ['TuTuc'];
+                if (tickets.self.adults > 0) selfDetails.push(`${tickets.self.adults}NL`);
+                if (tickets.self.c610 > 0) selfDetails.push(`${tickets.self.c610}TE`);
+                if (tickets.self.c15 > 0) selfDetails.push(`${tickets.self.c15}DK`); 
+                descriptionParts.push(selfDetails.join(' '));
+            }
+
+            const finalDescription = descriptionParts.join(' '); 
+            const encodedDescription = finalDescription.replace(/\s/g, '+');
+            const qrUrl = `https://qr.sepay.vn/img?bank=VietinBank&acc=NHILE88&template=compact&amount=${totalAmount}&des=${encodedDescription}`;
+
+            const displayAmount = parseInt(totalAmount).toLocaleString('vi-VN').replace(/\./g, '');
+            const explanationContent = 'NL: Người lớn | TE: Trẻ em (6-10 tuổi) | DK: Trẻ em đi kèm (1-5 tuổi) | VeDoan/TuTuc: Loại vé đã đăng ký.';
+
+            // --- Cấu trúc HTML mới cho khối thông tin và QR ---
+            qrContainer.innerHTML = `
+                <h2>Mã QR Thanh Toán</h2>
+                <p>Quét mã hoặc click vào ô để **sao chép** thông tin chuyển khoản:</p>
+
+                <div class="info-block">
+                    
+                    <div class="copy-item">
+                        <label>Ngân hàng:</label>
+                        <span class="bank-info">Vietinbank</span>
+                    </div>
+
+                    <div class="copy-item">
+                        <label for="acc_holder">Chủ TK:</label>
+                        <div class="input-group">
+                            <input type="text" id="acc_holder" value="NHILE88" readonly onclick="copyToClipboard('acc_holder')">
+                        </div>
+                    </div>
+
+                    <div class="copy-item">
+                        <label for="amount_box">Số tiền:</label>
+                        <div class="input-group">
+                            <input type="text" id="amount_box" value="${displayAmount}" readonly onclick="copyToClipboard('amount_box')">
+                        </div>
+                    </div>
+
+                    <div class="copy-item">
+                        <label for="des_box">Nội dung:</label>
+                        <div class="input-group">
+                            <input type="text" id="des_box" value="${finalDescription}" readonly onclick="copyToClipboard('des_box')">
+                        </div>
+                    </div>
+                </div>
+
+                <img src="${qrUrl}" alt="Mã QR Thanh Toán" style="width: 300px; height: 300px;">
+                
+                <p class="note">Vui lòng kiểm tra kỹ **Số tiền** và **Nội dung** trên ứng dụng ngân hàng trước khi xác nhận.</p>
+                
+                <div id="explanation">
+                    ${explanationContent}
+                </div>
+            `;
+        }
+
+        // --- Gắn sự kiện (Event Listeners) ---
+        document.getElementById('transport_mode').addEventListener('change', toggleForms);
+
+        const inputIds = [
+            'name', 'group_adults', 'group_children_6_10', 'group_children_1_5',
+            'self_adults', 'self_children_6_10', 'self_children_1_5'
+        ];
+        
+        inputIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', calculateTotal);
+                element.addEventListener('input', calculateTotal);
+            }
+        });
+
+        // Khởi tạo ban đầu
+        toggleForms();
+    </script>
+</body>
+</html>
