@@ -115,12 +115,11 @@
             word-wrap: break-word; 
             white-space: pre-wrap; 
         }
-        /* Container chứa Text và Nút Copy riêng biệt */
         .content-wrapper {
             flex-grow: 1;
             display: flex;
-            flex-direction: column; /* Xếp nội dung và nút dọc */
-            align-items: flex-start; /* Nội dung căn trái */
+            flex-direction: column;
+            align-items: flex-start;
         }
         .content-text {
             flex-grow: 1;
@@ -129,7 +128,7 @@
             white-space: pre-wrap;
             font-size: 1.05em;
             font-weight: bold;
-            margin-bottom: 8px; /* Khoảng cách dưới nội dung */
+            margin-bottom: 8px; 
         }
 
         /* Nút Copy */
@@ -144,7 +143,7 @@
             width: auto;
             flex-shrink: 0; 
             margin-bottom: 0; 
-            align-self: flex-start; /* Đảm bảo nút căn trên cùng (vertical align top) */
+            align-self: flex-start;
         }
         .copy-btn:hover {
             background-color: #e6f0ff;
@@ -209,18 +208,15 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Người lớn (NL)</td>
-                    <td class="price-value">1.700.000</td>
+                    <td>Người lớn</td> <td class="price-value">1.700.000</td>
                     <td class="price-value">1.500.000</td>
                 </tr>
                 <tr>
-                    <td>Trẻ em (TE, 6-10 tuổi)</td>
-                    <td class="price-value">1.200.000</td>
+                    <td>Trẻ em (6-10 tuổi)</td> <td class="price-value">1.200.000</td>
                     <td class="price-value">1.000.000</td>
                 </tr>
                 <tr>
-                    <td>Trẻ em đi kèm (DK, 1-5 tuổi)</td>
-                    <td class="price-value">200.000</td>
+                    <td>Trẻ em đi kèm (1-5 tuổi)</td> <td class="price-value">200.000</td>
                     <td class="price-value">0</td>
                 </tr>
             </tbody>
@@ -235,12 +231,13 @@
         
         <label for="transport_mode">Hình thức Đăng ký:</label>
         <select id="transport_mode">
+            <option value="default" selected>Bấm vào đây để lựa chọn</option>
             <option value="group_only">Chỉ đi theo đoàn</option>
             <option value="self_only">Chỉ đi tự túc</option>
             <option value="combined">Kết hợp theo đoàn và tự túc</option>
         </select>
 
-        <div id="group-form" class="ticket-group">
+        <div id="group-form" class="ticket-group" style="display:none;">
             <h3>Vé THEO ĐOÀN</h3>
             <label for="group_adults">Số lượng Người lớn (Đoàn):</label>
             <input type="number" id="group_adults" value="0" min="0">
@@ -313,7 +310,13 @@
             document.body.removeChild(tempInput);
         }
 
-        // --- Dữ liệu giá vé (giữ nguyên) ---
+        // --- Hàm tải ảnh QR (Đã xóa) ---
+        function downloadQrCode(qrUrl) {
+            alert("Chức năng tải mã QR đã bị vô hiệu hóa.");
+        }
+
+
+        // --- Dữ liệu giá vé ---
         const TICKET_PRICES = {
             group: {
                 adult: 1700000,
@@ -327,7 +330,7 @@
             }
         };
 
-        // --- Các hàm logic (giữ nguyên) ---
+        // --- Các hàm logic ---
         function cleanVietnameseString(str) {
             if (!str) return '';
             str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
@@ -337,8 +340,10 @@
 
         function toggleForms() {
             const mode = document.getElementById('transport_mode').value;
+            
             document.getElementById('group-form').style.display = (mode === 'group_only' || mode === 'combined') ? 'block' : 'none';
             document.getElementById('self-form').style.display = (mode === 'self_only' || mode === 'combined') ? 'block' : 'none';
+            
             calculateTotal(); 
         }
 
@@ -347,20 +352,22 @@
             let total = 0;
             let tickets = {};
 
-            if (mode === 'group_only' || mode === 'combined') {
-                const ga = parseInt(document.getElementById('group_adults').value) || 0;
-                const gc610 = parseInt(document.getElementById('group_children_6_10').value) || 0;
-                const gc15 = parseInt(document.getElementById('group_children_1_5').value) || 0;
-                total += (ga * TICKET_PRICES.group.adult) + (gc610 * TICKET_PRICES.group.child_6_10) + (gc15 * TICKET_PRICES.group.child_1_5);
-                tickets.group = { adults: ga, c610: gc610, c15: gc15 };
-            }
+            if (mode !== 'default') {
+                if (mode === 'group_only' || mode === 'combined') {
+                    const ga = parseInt(document.getElementById('group_adults').value) || 0;
+                    const gc610 = parseInt(document.getElementById('group_children_6_10').value) || 0;
+                    const gc15 = parseInt(document.getElementById('group_children_1_5').value) || 0;
+                    total += (ga * TICKET_PRICES.group.adult) + (gc610 * TICKET_PRICES.group.child_6_10) + (gc15 * TICKET_PRICES.group.child_1_5);
+                    tickets.group = { adults: ga, c610: gc610, c15: gc15 };
+                }
 
-            if (mode === 'self_only' || mode === 'combined') {
-                const sa = parseInt(document.getElementById('self_adults').value) || 0;
-                const sc610 = parseInt(document.getElementById('self_children_6_10').value) || 0;
-                const sc15 = parseInt(document.getElementById('self_children_1_5').value) || 0;
-                total += (sa * TICKET_PRICES.self.adult) + (sc610 * TICKET_PRICES.self.child_6_10) + (sc15 * TICKET_PRICES.self.child_1_5);
-                tickets.self = { adults: sa, c610: sc610, c15: sc15 };
+                if (mode === 'self_only' || mode === 'combined') {
+                    const sa = parseInt(document.getElementById('self_adults').value) || 0;
+                    const sc610 = parseInt(document.getElementById('self_children_6_10').value) || 0;
+                    const sc15 = parseInt(document.getElementById('self_children_1_5').value) || 0;
+                    total += (sa * TICKET_PRICES.self.adult) + (sc610 * TICKET_PRICES.self.child_6_10) + (sc15 * TICKET_PRICES.self.child_1_5);
+                    tickets.self = { adults: sa, c610: sc610, c15: sc15 };
+                }
             }
 
             const totalDisplay = document.getElementById('total-amount');
@@ -369,18 +376,23 @@
             totalDisplay.dataset.tickets = JSON.stringify(tickets);
         }
 
-        // --- Hàm tạo URL mã QR và hiển thị (ĐÃ TỐI ƯU) ---
+        // --- Hàm tạo URL mã QR và hiển thị ---
         function generateQrCode() {
             calculateTotal(); 
 
             const totalAmount = document.getElementById('total-amount').dataset.amount;
             const nameInput = document.getElementById('name').value.trim();
+            const mode = document.getElementById('transport_mode').value;
             const tickets = JSON.parse(document.getElementById('total-amount').dataset.tickets || '{}');
             
             const qrContainer = document.getElementById('qr-container');
 
             if (nameInput === "") {
                 qrContainer.innerHTML = '<p class="error">⚠️ Vui lòng nhập **Họ tên LĐ Platinum UP** để tạo mã QR.</p>';
+                return;
+            }
+            if (mode === 'default') {
+                qrContainer.innerHTML = '<p class="error">⚠️ Vui lòng chọn **Hình thức Đăng ký**.</p>';
                 return;
             }
             if (totalAmount == 0) {
@@ -410,7 +422,7 @@
 
             const finalDescription = descriptionParts.join(' '); 
             const encodedDescription = finalDescription.replace(/\s/g, '+');
-            const qrUrl = `https://qr.sepay.vn/img?bank=VietinBank&acc=NHILE88&template=compact&amount=${totalAmount}&des=${encodedDescription}`; // Lưu URL QR
+            const qrUrl = `https://qr.sepay.vn/img?bank=VietinBank&acc=NHILE88&template=compact&amount=${totalAmount}&des=${encodedDescription}`; 
 
             const displayAmount = parseInt(totalAmount).toLocaleString('vi-VN');
             const explanationContent = 'NL: Người lớn | TE: Trẻ em (6-10 tuổi) | DK: Trẻ em đi kèm (1-5 tuổi) | VeDoan/TuTuc: Loại vé đã đăng ký.';
