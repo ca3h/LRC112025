@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thanh Toán Vé LRC - QR Code</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -35,17 +36,13 @@
             width: 100%; 
             box-sizing: border-box; 
         }
+        /* Quy tắc định dạng chung cho Input, Select */
         input[type="text"], input[type="number"], select { 
             padding: 10px; 
             font-size: 16px;
+            font-family: Arial, sans-serif;
             border: 1px solid #ccc; 
             border-radius: 4px; 
-        }
-        /* Highlight input có thể click để copy */
-        input[readonly] {
-            cursor: pointer;
-            background-color: #f0f0f0; 
-            text-align: center; /* Căn giữa nội dung copy */
         }
         button { 
             background-color: #007bff; 
@@ -63,17 +60,16 @@
         #qr-container { 
             text-align: center; 
             margin-top: 30px; 
-            border: 1px solid #eee; 
             padding: 20px; 
             border-radius: 8px; 
+            border: 1px solid #eee;
         }
-        /* Đảm bảo ảnh QR là khối và được căn giữa */
         #qr-container img {
             max-width: 90%;
             height: auto;
             width: 300px; 
-            display: block; /* Quan trọng: Đảm bảo nó chiếm một hàng riêng */
-            margin: 20px auto 10px auto; /* Căn giữa và tạo khoảng cách dưới */
+            margin: 20px auto 10px auto;
+            display: block;
         }
         #total-amount { 
             font-size: 1.5em; 
@@ -81,41 +77,83 @@
             color: #28a745; 
             margin-bottom: 15px; 
         }
-        /* Style cho khối thông tin Copy */
+        
+        /* === STYLE KHỐI THÔNG TIN (LIỀN KỀ) === */
         .info-block {
             max-width: 450px;
             margin: 0 auto;
             padding-bottom: 15px;
             text-align: left;
         }
-        .copy-item {
+        .info-row { 
             display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            align-items: center; /* Căn giữa theo chiều dọc */
+            margin-bottom: 12px;
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
         }
-        .copy-item label {
+        /* Hàng Nội dung: Cần phải căn trên cùng (flex-start) */
+        .content-row { 
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
+        }
+        .info-row label, .content-row label {
             width: 100px;
             margin-bottom: 0;
             font-weight: bold;
-            display: inline-block;
             flex-shrink: 0;
+            color: #555;
+            display: inline;
+            padding-top: 0;
         }
-        .input-group {
+        .display-value {
             flex-grow: 1;
-            position: relative;
+            font-weight: bold;
+            font-size: 1.05em;
+            word-wrap: break-word; 
+            white-space: pre-wrap; 
+        }
+        /* Container chứa Nội dung Text và Nút Copy riêng biệt */
+        .content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column; /* Xếp nội dung và nút dọc */
+            align-items: flex-start; /* Nội dung căn trái */
+        }
+        .content-text {
+            flex-grow: 1;
+            padding-right: 10px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: 1.05em;
+            font-weight: bold;
+            margin-bottom: 8px; /* Khoảng cách dưới nội dung */
+        }
+
+        /* Nút Copy */
+        .copy-btn {
+            background: none;
+            color: #007bff;
+            border: 1px solid #007bff;
+            padding: 8px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+            /* Đẩy nút ra giữa (hoặc căn trái) dưới nội dung */
+            align-self: flex-start; 
+            margin-bottom: 0; 
+        }
+        .copy-btn:hover {
+            background-color: #e6f0ff;
+        }
+        .copy-btn i {
             margin-right: 5px;
         }
-        .input-group input {
-            width: 100%;
-            padding-right: 10px;
-            background-color: #f0f0f0;
-            cursor: pointer;
-        }
-        .bank-info {
-            font-weight: bold;
-            flex-grow: 1;
-            padding-left: 10px;
-        }
+
         #explanation {
             font-size: 0.95em;
             text-align: center;
@@ -123,18 +161,17 @@
             border-top: 1px dashed #ccc;
             margin-top: 15px;
         }
-        /* Đảm bảo nút download là khối và được căn giữa */
         .download-button {
-            background-color: #f39c12;
+            background-color: #f39c12; 
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin: 10px auto; /* Căn giữa */
+            margin: 10px auto;
             width: auto;
-            display: block; /* Quan trọng: Đảm bảo nó chiếm một hàng riêng */
+            display: block;
         }
         .download-button:hover {
             background-color: #e67e22;
@@ -255,27 +292,44 @@
     <script>
         // --- Hàm Copy Nội dung ---
         function copyToClipboard(elementId) {
-            const copyText = document.getElementById(elementId);
+            const copyElement = document.getElementById(elementId);
             
-            if (copyText) {
-                copyText.select();
-                copyText.setSelectionRange(0, 99999); 
-                
-                try {
-                    document.execCommand("copy");
-                    alert("Đã sao chép: " + copyText.value);
-                } catch (err) {
-                    navigator.clipboard.writeText(copyText.value).then(() => {
-                        alert("Đã sao chép: " + copyText.value);
+            if (copyElement) {
+                const copyText = copyElement.getAttribute('data-value'); 
+
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(copyText).then(() => {
+                        alert("Đã sao chép: " + copyText);
                     }).catch(err => {
                         console.error('Không thể sao chép', err);
-                        alert("Tự động sao chép không hoạt động. Vui lòng sao chép thủ công.");
+                        fallbackCopyToClipboard(copyText);
                     });
+                } else {
+                    fallbackCopyToClipboard(copyText);
                 }
             }
         }
+        
+        // Phương án dự phòng 
+        function fallbackCopyToClipboard(text) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            tempInput.style.position = 'fixed'; 
+            tempInput.style.opacity = '0'; 
+            document.body.appendChild(tempInput);
+            tempInput.focus();
+            tempInput.select();
+            
+            try {
+                document.execCommand('copy');
+                alert("Đã sao chép: " + text);
+            } catch (err) {
+                alert("Tự động sao chép không hoạt động. Vui lòng sao chép thủ công: " + text);
+            }
+            document.body.removeChild(tempInput);
+        }
 
-        // --- HÀM TẢI ẢNH QR MỚI (Sử dụng Fetch/Blob để đảm bảo tải chéo tên miền) ---
+        // --- HÀM TẢI ẢNH QR ---
         async function downloadQrCode(qrUrl) {
             if (!qrUrl) {
                  alert("Không tìm thấy mã QR để tải về.");
@@ -283,14 +337,10 @@
             }
 
             try {
-                // 1. Fetch the image data
                 const response = await fetch(qrUrl);
                 const blob = await response.blob();
-                
-                // 2. Create a local object URL from the blob
                 const url = URL.createObjectURL(blob);
                 
-                // 3. Create a temporary link element for download
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = 'QR_LRC_Thanhtoan.png'; 
@@ -298,7 +348,6 @@
                 document.body.appendChild(link);
                 link.click();
                 
-                // 4. Clean up the temporary URL and link
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
                 
@@ -308,7 +357,7 @@
             }
         }
 
-        // --- Dữ liệu giá vé (giữ nguyên) ---
+        // --- Dữ liệu giá vé và hàm logic (Giữ nguyên) ---
         const TICKET_PRICES = {
             group: {
                 adult: 1700000,
@@ -322,7 +371,6 @@
             }
         };
 
-        // --- Các hàm logic (giữ nguyên) ---
         function cleanVietnameseString(str) {
             if (!str) return '';
             str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
@@ -364,7 +412,7 @@
             totalDisplay.dataset.tickets = JSON.stringify(tickets);
         }
 
-        // --- Hàm tạo URL mã QR và hiển thị (ĐÃ TỐI ƯU DOWNLOAD) ---
+        // --- Hàm tạo URL mã QR và hiển thị ---
         function generateQrCode() {
             calculateTotal(); 
 
@@ -407,39 +455,40 @@
             const encodedDescription = finalDescription.replace(/\s/g, '+');
             const qrUrl = `https://qr.sepay.vn/img?bank=VietinBank&acc=NHILE88&template=compact&amount=${totalAmount}&des=${encodedDescription}`; // Lưu URL QR
 
-            const displayAmount = parseInt(totalAmount).toLocaleString('vi-VN').replace(/\./g, '');
+            const displayAmount = parseInt(totalAmount).toLocaleString('vi-VN');
             const explanationContent = 'NL: Người lớn | TE: Trẻ em (6-10 tuổi) | DK: Trẻ em đi kèm (1-5 tuổi) | VeDoan/TuTuc: Loại vé đã đăng ký.';
 
-            // --- Cấu trúc HTML mới cho khối thông tin và QR ---
+            // --- Cấu trúc HTML MỚI ---
             qrContainer.innerHTML = `
                 <h2>Mã QR Thanh Toán</h2>
-                <p>Quét mã hoặc click vào ô để **sao chép** thông tin chuyển khoản:</p>
+                <p>Quét mã hoặc sao chép thông tin:</p>
 
                 <div class="info-block">
                     
-                    <div class="copy-item">
+                    <div class="info-row">
                         <label>Ngân hàng:</label>
-                        <span class="bank-info">Vietinbank</span>
+                        <span class="display-value">Vietinbank</span>
                     </div>
 
-                    <div class="copy-item">
-                        <label for="acc_holder">Chủ TK:</label>
-                        <div class="input-group">
-                            <input type="text" id="acc_holder" value="NHILE88" readonly onclick="copyToClipboard('acc_holder')">
-                        </div>
+                    <div class="info-row">
+                        <label>Chủ TK:</label>
+                        <span id="acc_holder_display" class="display-value" data-value="NHILE88">NHILE88</span>
                     </div>
 
-                    <div class="copy-item">
-                        <label for="amount_box">Số tiền:</label>
-                        <div class="input-group">
-                            <input type="text" id="amount_box" value="${displayAmount}" readonly onclick="copyToClipboard('amount_box')">
-                        </div>
+                    <div class="info-row">
+                        <label>Số tiền:</label>
+                        <span id="amount_box_display" class="display-value" data-value="${totalAmount}">${displayAmount} VND</span>
                     </div>
 
-                    <div class="copy-item">
-                        <label for="des_box">Nội dung:</label>
-                        <div class="input-group">
-                            <input type="text" id="des_box" value="${finalDescription}" readonly onclick="copyToClipboard('des_box')">
+                    <div class="content-row">
+                        <label>Nội dung:</label>
+                        
+                        <div class="content-wrapper">
+                            <span id="des_box" class="content-text" data-value="${finalDescription}">${finalDescription}</span>
+                            
+                            <button class="copy-btn" onclick="copyToClipboard('des_box')">
+                                <i class="fa-regular fa-copy"></i> Copy
+                            </button>
                         </div>
                     </div>
                 </div>
