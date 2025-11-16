@@ -208,15 +208,18 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Người lớn</td> <td class="price-value">1.700.000</td>
+                    <td>Người lớn</td>
+                    <td class="price-value">1.700.000</td>
                     <td class="price-value">1.500.000</td>
                 </tr>
                 <tr>
-                    <td>Trẻ em (6-10 tuổi)</td> <td class="price-value">1.200.000</td>
+                    <td>Trẻ em (6-10 tuổi)</td>
+                    <td class="price-value">1.200.000</td>
                     <td class="price-value">1.000.000</td>
                 </tr>
                 <tr>
-                    <td>Trẻ em đi kèm (1-5 tuổi)</td> <td class="price-value">200.000</td>
+                    <td>Trẻ em đi kèm (1-5 tuổi)</td>
+                    <td class="price-value">200.000</td>
                     <td class="price-value">0</td>
                 </tr>
             </tbody>
@@ -231,7 +234,7 @@
         
         <label for="transport_mode">Hình thức Đăng ký:</label>
         <select id="transport_mode">
-            <option value="default" selected>Bấm vào đây để lựa chọn</option>
+            <option value="default" selected>&gt;&gt; BẤM VÀO ĐÂY để lựa chọn</option>
             <option value="group_only">Chỉ đi theo đoàn</option>
             <option value="self_only">Chỉ đi tự túc</option>
             <option value="combined">Kết hợp theo đoàn và tự túc</option>
@@ -309,12 +312,6 @@
             }
             document.body.removeChild(tempInput);
         }
-
-        // --- Hàm tải ảnh QR (Đã xóa) ---
-        function downloadQrCode(qrUrl) {
-            alert("Chức năng tải mã QR đã bị vô hiệu hóa.");
-        }
-
 
         // --- Dữ liệu giá vé ---
         const TICKET_PRICES = {
@@ -422,7 +419,7 @@
 
             const finalDescription = descriptionParts.join(' '); 
             const encodedDescription = finalDescription.replace(/\s/g, '+');
-            const qrUrl = `https://qr.sepay.vn/img?bank=VietinBank&acc=NHILE88&template=compact&amount=${totalAmount}&des=${encodedDescription}`; 
+            const qrUrl = `https://qr.sepay.vn/img?bank=VietinBank&acc=NHILE88&template=compact&amount=${totalAmount}&des=${encodedDescription}`; // Lưu URL QR
 
             const displayAmount = parseInt(totalAmount).toLocaleString('vi-VN');
             const explanationContent = 'NL: Người lớn | TE: Trẻ em (6-10 tuổi) | DK: Trẻ em đi kèm (1-5 tuổi) | VeDoan/TuTuc: Loại vé đã đăng ký.';
