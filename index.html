@@ -87,12 +87,11 @@
         }
         .info-row { 
             display: flex;
-            align-items: center; /* Căn giữa theo chiều dọc */
+            align-items: center; 
             margin-bottom: 12px;
             padding: 5px 0;
             border-bottom: 1px dotted #eee;
         }
-        /* Hàng Nội dung: Cần phải căn trên cùng (flex-start) */
         .content-row { 
             display: flex;
             align-items: flex-start;
@@ -116,7 +115,7 @@
             word-wrap: break-word; 
             white-space: pre-wrap; 
         }
-        /* Container chứa Nội dung Text và Nút Copy riêng biệt */
+        /* Container chứa Text và Nút Copy riêng biệt */
         .content-wrapper {
             flex-grow: 1;
             display: flex;
@@ -143,9 +142,9 @@
             cursor: pointer;
             font-size: 14px;
             width: auto;
-            /* Đẩy nút ra giữa (hoặc căn trái) dưới nội dung */
-            align-self: flex-start; 
+            flex-shrink: 0; 
             margin-bottom: 0; 
+            align-self: flex-start; /* Đảm bảo nút căn trên cùng (vertical align top) */
         }
         .copy-btn:hover {
             background-color: #e6f0ff;
@@ -160,21 +159,6 @@
             padding-top: 10px;
             border-top: 1px dashed #ccc;
             margin-top: 15px;
-        }
-        .download-button {
-            background-color: #f39c12; 
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 10px auto;
-            width: auto;
-            display: block;
-        }
-        .download-button:hover {
-            background-color: #e67e22;
         }
         .error { color: red; margin-bottom: 10px; }
 
@@ -329,35 +313,7 @@
             document.body.removeChild(tempInput);
         }
 
-        // --- HÀM TẢI ẢNH QR ---
-        async function downloadQrCode(qrUrl) {
-            if (!qrUrl) {
-                 alert("Không tìm thấy mã QR để tải về.");
-                 return;
-            }
-
-            try {
-                const response = await fetch(qrUrl);
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'QR_LRC_Thanhtoan.png'; 
-                
-                document.body.appendChild(link);
-                link.click();
-                
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                
-            } catch (error) {
-                console.error('Download failed using fetch/blob:', error);
-                alert("Lỗi: Không thể tải mã QR tự động. Vui lòng thử nhấp chuột phải/giữ vào ảnh để lưu thủ công.");
-            }
-        }
-
-        // --- Dữ liệu giá vé và hàm logic (Giữ nguyên) ---
+        // --- Dữ liệu giá vé (giữ nguyên) ---
         const TICKET_PRICES = {
             group: {
                 adult: 1700000,
@@ -371,6 +327,7 @@
             }
         };
 
+        // --- Các hàm logic (giữ nguyên) ---
         function cleanVietnameseString(str) {
             if (!str) return '';
             str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
@@ -412,7 +369,7 @@
             totalDisplay.dataset.tickets = JSON.stringify(tickets);
         }
 
-        // --- Hàm tạo URL mã QR và hiển thị ---
+        // --- Hàm tạo URL mã QR và hiển thị (ĐÃ TỐI ƯU) ---
         function generateQrCode() {
             calculateTotal(); 
 
@@ -482,12 +439,11 @@
 
                     <div class="content-row">
                         <label>Nội dung:</label>
-                        
                         <div class="content-wrapper">
                             <span id="des_box" class="content-text" data-value="${finalDescription}">${finalDescription}</span>
                             
-                            <button class="copy-btn" onclick="copyToClipboard('des_box')">
-                                <i class="fa-regular fa-copy"></i> Copy
+                            <button class="copy-btn" onclick="copyToClipboard('des_box')" style="align-self: center;">
+                                <i class="fa-regular fa-copy"></i> Sao chép Nội dung
                             </button>
                         </div>
                     </div>
@@ -495,8 +451,6 @@
 
                 <img src="${qrUrl}" alt="Mã QR Thanh Toán" id="qr-image">
                 
-                <button class="download-button" onclick="downloadQrCode('${qrUrl}')">Tải Mã QR</button>
-
                 <p class="note">Vui lòng kiểm tra kỹ **Số tiền** và **Nội dung** trên ứng dụng ngân hàng trước khi xác nhận.</p>
                 
                 <div id="explanation">
